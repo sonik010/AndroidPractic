@@ -1,5 +1,6 @@
 package com.example.practica.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,19 +52,28 @@ import coil.compose.AsyncImage
 import com.example.practica.domain.model.Book
 import com.example.practica.ui.viewmodel.BookDetailUiState
 import com.example.practica.ui.viewmodel.BookDetailViewModel
+import androidx.compose.ui.platform.LocalContext
 import com.example.practica.ui.viewmodel.BookDetailViewModelFactory
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailScreen(
     navController: NavController,
-    bookId: Int,
-    viewModel: BookDetailViewModel = viewModel(factory = BookDetailViewModelFactory)  // Используем правильную фабрику
+    bookId: Int
 ) {
+
+    val context = LocalContext.current
+    val viewModel: BookDetailViewModel = viewModel(
+        factory = BookDetailViewModelFactory(context)
+    )
+
     val uiState by viewModel.uiState.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     LaunchedEffect(bookId) {
         viewModel.loadBook(bookId)
+        viewModel.checkFavoriteStatus(bookId)
     }
 
     Scaffold(
@@ -77,6 +91,21 @@ fun BookDetailScreen(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Назад"
                         )
+                    }
+                },
+                actions = {
+                    when (uiState) {
+                        is BookDetailUiState.Success -> {
+                            val book = (uiState as BookDetailUiState.Success).book
+                            IconButton(onClick = { viewModel.toggleFavorite(book) }) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
+                                    tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                        else -> {}
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -101,7 +130,9 @@ fun BookDetailScreen(
                 val book = (uiState as BookDetailUiState.Success).book
                 BookDetailContent(
                     book = book,
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
+                    onFavoriteClick = { viewModel.toggleFavorite(book) },
+                    isFavorite = isFavorite
                 )
             }
             is BookDetailUiState.Error -> {
@@ -131,7 +162,9 @@ fun BookDetailScreen(
 @Composable
 fun BookDetailContent(
     book: Book,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onFavoriteClick: () -> Unit,
+    isFavorite: Boolean
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -264,6 +297,24 @@ fun BookDetailContent(
                         lineHeight = 20.sp
                     )
                 }
+            }
+        }
+
+        item {
+            Button(
+                onClick = onFavoriteClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isFavorite) Color.Red else MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(if (isFavorite) "Удалить из избранного" else "Добавить в избранное")
             }
         }
     }

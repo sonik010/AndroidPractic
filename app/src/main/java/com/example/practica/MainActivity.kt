@@ -1,3 +1,4 @@
+// file: src/main/java/com/example/practica/MainActivity.kt
 package com.example.practica
 
 import android.os.Bundle
@@ -9,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.practica.ui.BookListApp
 import com.example.practica.ui.theme.PracticaTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
