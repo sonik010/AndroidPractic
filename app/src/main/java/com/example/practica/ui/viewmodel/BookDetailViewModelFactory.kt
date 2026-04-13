@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/ui/viewmodel/BookDetailViewModelFactory.kt
 package com.example.practica.ui.viewmodel
 
 import android.content.Context

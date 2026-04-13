@@ -49,9 +49,6 @@ fun AppNavigation(
             FilterScreen(navController = navController)
         }
 
-        composable(Screen.Favorites.route) {
-            FavoritesScreen()
-        }
 
         composable(Screen.Profile.route) {
             ProfileScreen()

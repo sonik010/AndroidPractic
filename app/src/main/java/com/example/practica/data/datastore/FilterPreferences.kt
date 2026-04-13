@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/data/datastore/FilterPreferences.kt
 package com.example.practica.data.datastore
 
 import androidx.datastore.core.DataStore

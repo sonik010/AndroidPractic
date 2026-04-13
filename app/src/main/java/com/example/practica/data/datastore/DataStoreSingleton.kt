@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/data/datastore/DataStoreSingleton.kt
 package com.example.practica.data.datastore
 
 import android.content.Context

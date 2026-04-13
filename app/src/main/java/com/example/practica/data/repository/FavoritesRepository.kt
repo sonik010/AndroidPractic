@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/data/repository/FavoritesRepository.kt
 package com.example.practica.data.repository
 
 import com.example.practica.data.database.AppDatabase

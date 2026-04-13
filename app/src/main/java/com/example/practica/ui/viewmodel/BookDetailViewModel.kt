@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/ui/viewmodel/BookDetailViewModel.kt
 package com.example.practica.ui.viewmodel
 
 import android.util.Log

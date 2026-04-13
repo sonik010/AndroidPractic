@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/ui/viewmodel/BookListViewModel.kt
 package com.example.practica.ui.viewmodel
 
 import androidx.lifecycle.ViewModel

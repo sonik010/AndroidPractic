@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/MainActivity.kt
 package com.example.practica
 
 import android.os.Bundle

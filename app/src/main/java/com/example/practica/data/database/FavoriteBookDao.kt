@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/data/database/FavoriteBookDao.kt
 package com.example.practica.data.database
 
 import androidx.room.Dao

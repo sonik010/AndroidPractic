@@ -1,4 +1,3 @@
-// file: src/main/java/com/example/practica/ui/screens/FavoritesScreen.kt
 package com.example.practica.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement

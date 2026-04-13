@@ -1,4 +1,3 @@
-// file: build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -75,6 +74,8 @@ dependencies {
 
     // Gson
     implementation(libs.google.gson)
+    implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.androidx.ui.graphics)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -91,6 +92,8 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
 }
 
