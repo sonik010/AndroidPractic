@@ -1,5 +1,6 @@
 package com.example.practica.domain.usecase
 
+import com.example.practica.data.datastore.FilterSettings
 import com.example.practica.domain.model.Book
 import com.example.practica.domain.repository.IBookRepository
 import kotlinx.coroutines.flow.Flow
@@ -8,10 +9,10 @@ import kotlinx.coroutines.flow.flow
 class SearchBooksUseCase(
     private val repository: IBookRepository
 ) {
-    operator fun invoke(query: String): Flow<SearchBooksState> = flow {
+    operator fun invoke(query: String, filters: FilterSettings = FilterSettings()): Flow<SearchBooksState> = flow {
         emit(SearchBooksState.Loading)
 
-        val result = repository.searchBooks(query)
+        val result = repository.searchBooks(query, filters)
 
         when {
             result.isSuccess -> {

@@ -16,13 +16,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -32,9 +35,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,19 +47,35 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.practica.domain.model.Book
+import com.example.practica.ui.cache.BadgeCache
 import com.example.practica.ui.viewmodel.BookListUiState
 import com.example.practica.ui.viewmodel.BookListViewModel
 import com.example.practica.ui.viewmodel.BookListViewModelFactory
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookListScreen(
     navController: NavController,
     onBookClick: (Book) -> Unit,
-    viewModel: BookListViewModel = viewModel(factory = BookListViewModelFactory)
+
 ) {
+
+    val context = LocalContext.current
+    val viewModel: BookListViewModel = viewModel(factory = BookListViewModelFactory(context))
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val filters by viewModel.filters.collectAsState()
+
+
+    // Создаем экземпляр BadgeCache (в реальном проекте используйте DI)
+    val badgeCache = remember { BadgeCache() }
+
+    // Проверяем, нужно ли показывать бейдж (фильтры не по умолчанию)
+    val showBadge = remember(filters) {
+        filters.genre.isNotBlank() || filters.minRating > 0 || filters.year > 0
+    }
 
     Scaffold(
         topBar = {
@@ -63,7 +84,34 @@ fun BookListScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                ),
+                actions = {
+                    // Кнопка фильтров с бейджем
+                    Box {
+                        IconButton(
+                            onClick = {
+                                badgeCache.setBadgeShown()
+                                navController.navigate("filter")
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Фильтры"
+                            )
+                        }
+                        // Бейдж показывается если:
+                        // 1. Есть активные фильтры (не по умолчанию)
+                        // 2. И кэш говорит, что нужно показать (или всегда показываем при активных фильтрах)
+                        if (showBadge) {
+                            Badge(
+                                modifier = Modifier.align(Alignment.TopEnd),
+                                containerColor = Color.Red
+                            ) {
+                                Text("!", fontSize = 10.sp)
+                            }
+                        }
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -85,6 +133,26 @@ fun BookListScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Поиск") },
                 singleLine = true
             )
+
+            // Показываем активные фильтры если есть
+            if (showBadge) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (filters.genre.isNotBlank()) {
+                        FilterChip(text = "Жанр: ${filters.genre}")
+                    }
+                    if (filters.minRating > 0) {
+                        FilterChip(text = "Рейтинг: ${filters.minRating}+")
+                    }
+                    if (filters.year > 0) {
+                        FilterChip(text = "Год: ${filters.year}+")
+                    }
+                }
+            }
 
             // Правильная обработка состояний
             when (uiState) {
@@ -149,6 +217,22 @@ fun BookListScreen(
                 }
             }
         }
+    }
+}
+
+// Компонент для отображения активного фильтра
+@Composable
+fun FilterChip(text: String) {
+    androidx.compose.material3.Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier
+    ) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
     }
 }
 

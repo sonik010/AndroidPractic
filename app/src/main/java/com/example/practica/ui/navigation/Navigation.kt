@@ -10,12 +10,15 @@ import androidx.navigation.navArgument
 import com.example.practica.ui.screens.BookDetailScreen
 import com.example.practica.ui.screens.BookListScreen
 import com.example.practica.ui.screens.FavoritesScreen
+import com.example.practica.ui.screens.FilterScreen
 import com.example.practica.ui.screens.ProfileScreen
 
 sealed class Screen(val route: String) {
     object BookList : Screen("book_list")
     object Favorites : Screen("favorites")
     object Profile : Screen("profile")
+
+    object Filter : Screen("filter")
     object BookDetail : Screen("book_detail/{bookId}") {
         fun passBook(bookId: Int): String {
             return "book_detail/$bookId"
@@ -42,12 +45,19 @@ fun AppNavigation(
             )
         }
 
+        composable(Screen.Filter.route) {
+            FilterScreen(navController = navController)
+        }
+
         composable(Screen.Favorites.route) {
             FavoritesScreen()
         }
 
         composable(Screen.Profile.route) {
             ProfileScreen()
+        }
+        composable(Screen.Favorites.route) {
+            FavoritesScreen(navController = navController)
         }
 
         composable(
