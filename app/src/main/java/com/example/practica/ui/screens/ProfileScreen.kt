@@ -98,21 +98,12 @@ fun ProfileScreen() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                if (profile.bio.isNotBlank()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("О себе", fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(profile.bio)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (profile.reminder.isNotBlank()) {
+                    Text(
+                        text = "Напоминание: ${profile.reminder}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
                 }
 
                 Card(

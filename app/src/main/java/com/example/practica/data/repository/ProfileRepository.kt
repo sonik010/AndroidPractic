@@ -8,56 +8,34 @@ import com.google.gson.Gson
 import java.io.File
 import java.io.FileOutputStream
 
-class ProfileRepository(private val context: Context) {
-
-    private val prefs = context.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
+class ProfileRepository(context: Context) {
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences("profile_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
     fun saveProfile(profile: UserProfile) {
-        val json = gson.toJson(profile)
-        prefs.edit().putString("user_profile", json).apply()
-        Log.d("ProfileRepo", "Profile saved: $json")
+        prefs.edit().putString("user_profile", gson.toJson(profile)).apply()
     }
 
     fun getProfile(): UserProfile {
         val json = prefs.getString("user_profile", null)
-        return if (json != null) {
-            gson.fromJson(json, UserProfile::class.java)
-        } else {
-            UserProfile()
-        }
+        return if (json != null) gson.fromJson(json, UserProfile::class.java) else UserProfile()
     }
 
     fun saveAvatar(uri: Uri): String {
         return try {
-            Log.d("ProfileRepo", "Saving avatar from URI: $uri")
-
-            val inputStream = context.contentResolver.openInputStream(uri)
-            if (inputStream == null) {
-                Log.e("ProfileRepo", "Cannot open input stream for URI: $uri")
-                return ""
+            val inputStream = appContext.contentResolver.openInputStream(uri) ?: return ""
+            val avatarFile = File(File(appContext.filesDir, "avatars"), "avatar_${System.currentTimeMillis()}.jpg").apply {
+                parentFile?.mkdirs()
             }
-
-            val avatarDir = File(context.filesDir, "avatars")
-            if (!avatarDir.exists()) {
-                avatarDir.mkdirs()
-                Log.d("ProfileRepo", "Created avatars dir: ${avatarDir.absolutePath}")
-            }
-
-            val avatarFile = File(avatarDir, "avatar_${System.currentTimeMillis()}.jpg")
-            FileOutputStream(avatarFile).use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
+            FileOutputStream(avatarFile).use { inputStream.copyTo(it) }
             inputStream.close()
-
-            val savedPath = avatarFile.absolutePath
-            Log.d("ProfileRepo", "Avatar saved to: $savedPath")
-            Log.d("ProfileRepo", "File exists: ${avatarFile.exists()}, size: ${avatarFile.length()}")
-
-            savedPath
+            avatarFile.absolutePath
         } catch (e: Exception) {
             Log.e("ProfileRepo", "Error saving avatar", e)
             ""
         }
     }
+
+    fun getAppContext() = appContext
 }

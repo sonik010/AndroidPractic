@@ -76,6 +76,7 @@ dependencies {
     implementation(libs.google.gson)
     implementation(libs.androidx.compose.runtime.livedata)
     implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.compose.foundation)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

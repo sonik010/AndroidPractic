@@ -7,5 +7,6 @@ data class UserProfile(
     val avatarPath: String = "",
     val resumeUrl: String = "",
     val position: String = "",
-    val bio: String = ""
+    val bio: String = "",
+    val reminder: String = ""
 ) : Serializable
