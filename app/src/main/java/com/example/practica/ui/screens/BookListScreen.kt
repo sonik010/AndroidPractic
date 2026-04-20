@@ -194,16 +194,18 @@ fun BookListItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = book.title,
+                    text = book.title?: "Без названия",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2
                 )
-                Text(
-                    text = book.author,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
+                if (book.author != null) {
+                    Text(
+                        text = book.author,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 4.dp)
@@ -211,7 +213,7 @@ fun BookListItem(
                     Text(
                         text = "${book.year} - ${book.pages} стр.",
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

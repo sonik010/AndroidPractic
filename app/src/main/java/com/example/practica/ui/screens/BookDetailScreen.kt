@@ -37,10 +37,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -54,7 +56,8 @@ import com.example.practica.ui.viewmodel.BookDetailViewModelFactory
 fun BookDetailScreen(
     navController: NavController,
     bookId: Int,
-    viewModel: BookDetailViewModel = viewModel(factory = BookDetailViewModelFactory)  // Используем правильную фабрику
+    viewModelFactory: ViewModelProvider.Factory,
+    viewModel: BookDetailViewModel = viewModel(factory = viewModelFactory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -67,7 +70,10 @@ fun BookDetailScreen(
             TopAppBar(
                 title = {
                     when (uiState) {
-                        is BookDetailUiState.Success -> Text((uiState as BookDetailUiState.Success).book.title.take(20))
+                        is BookDetailUiState.Success -> {
+                            val title = (uiState as BookDetailUiState.Success).book.title
+                            Text(title?.take(20) ?: "Детали книги")
+                        }
                         else -> Text("Детали книги")
                     }
                 },
@@ -167,35 +173,39 @@ fun BookDetailContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = book.title,
+                    text = book.title?: "Без названия",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
 
-                Text(
-                    text = book.author,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Рейтинг",
-                        tint = Color(0xFFFFC107),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
+                if (book.author != null) {
                     Text(
-                        text = String.format("%.1f / 5.0", book.rating),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        text = book.author,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
+                }
+
+                if (book.rating != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Рейтинг",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = String.format("%.1f / 5.0", book.rating),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
@@ -208,10 +218,9 @@ fun BookDetailContent(
                 )
             ) {
                 Row(
-                    modifier = Modifier
+                    Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .padding(16.dp), Arrangement.SpaceEvenly
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
@@ -229,14 +238,16 @@ fun BookDetailContent(
                         )
                         Text("Страниц", fontSize = 12.sp)
                     }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = book.genre,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1
-                        )
-                        Text("Жанр", fontSize = 12.sp)
+                    if (book.genre != null) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = book.genre,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                            Text("Жанр", fontSize = 12.sp)
+                        }
                     }
                 }
             }
@@ -259,7 +270,7 @@ fun BookDetailContent(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Text(
-                        text = book.description,
+                        text = book.description ?: "Описание отсутствует",
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )

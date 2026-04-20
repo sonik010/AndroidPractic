@@ -1,10 +1,12 @@
+// BookListViewModel.kt
 package com.example.practica.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.practica.domain.model.Book
-import com.example.practica.domain.usecase.SearchBooksState
 import com.example.practica.domain.usecase.SearchBooksUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,11 +16,13 @@ class BookListViewModel(
     private val searchBooksUseCase: SearchBooksUseCase
 ) : ViewModel() {
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     private val _uiState = MutableStateFlow<BookListUiState>(BookListUiState.Initial)
     val uiState: StateFlow<BookListUiState> = _uiState.asStateFlow()
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private var searchJob: Job? = null
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -27,26 +31,30 @@ class BookListViewModel(
     fun searchBooks() {
         val query = _searchQuery.value
         if (query.isBlank()) {
-            _uiState.value = BookListUiState.Empty
+            _uiState.value = BookListUiState.Initial
             return
         }
 
-        viewModelScope.launch {
-            searchBooksUseCase(query).collect { state ->
-                when (state) {
-                    is SearchBooksState.Loading -> {
-                        _uiState.value = BookListUiState.Loading
-                    }
-                    is SearchBooksState.Success -> {
-                        _uiState.value = BookListUiState.Success(state.books)
-                    }
-                    is SearchBooksState.Empty -> {
-                        _uiState.value = BookListUiState.Empty
-                    }
-                    is SearchBooksState.Error -> {
-                        _uiState.value = BookListUiState.Error(state.message)
-                    }
+        // Отменяем предыдущий поиск (debounce)
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(500) // Debounce
+
+            _uiState.value = BookListUiState.Loading
+
+            val result = searchBooksUseCase(query)
+
+            _uiState.value = when {
+                result.isSuccess -> {
+                    val books = result.getOrNull() ?: emptyList()
+                    if (books.isEmpty()) BookListUiState.Empty
+                    else BookListUiState.Success(books)
                 }
+                result.isFailure -> {
+                    val error = result.exceptionOrNull()
+                    BookListUiState.Error(error?.message ?: "Неизвестная ошибка")
+                }
+                else -> BookListUiState.Error("Неизвестная ошибка")
             }
         }
     }

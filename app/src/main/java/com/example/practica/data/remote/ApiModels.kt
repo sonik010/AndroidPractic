@@ -35,15 +35,15 @@ fun BookDoc.toBook(): DomainBook {
     return DomainBook(
         id = key?.hashCode() ?: System.currentTimeMillis().hashCode(),
         openLibraryId = key ?: "",
-        title = title ?: "Без названия",
-        author = authorNames?.joinToString(", ") ?: "Автор неизвестен",
-        year = firstPublishYear ?: 0,
-        pages = pages ?: 0,
-        genre = genres?.firstOrNull() ?: "Разное",
-        description = firstSentence?.firstOrNull() ?: "Описание отсутствует",
-        rating = rating?.toFloat() ?: 0f,
-        coverUrl = if (coverId != null && coverId != 0)
-            "https://covers.openlibrary.org/b/id/$coverId-M.jpg"
-        else null
+        title = title,
+        author = authorNames?.joinToString(", "),
+        year = firstPublishYear,
+        pages = pages,
+        genre = genres?.firstOrNull(),
+        description = firstSentence?.firstOrNull(),
+        rating = rating?.toFloat(),
+        coverUrl = coverId?.takeIf { it != 0 }?.let {
+            "https://covers.openlibrary.org/b/id/$it-M.jpg"
+        }
     )
 }
